@@ -288,7 +288,7 @@ def upgrade() -> None:
     sa.Column('value_uid', sa.UUID(), nullable=False),
     sa.Column('value', sa.String(length=255), nullable=False),
     sa.Column('property_uid', sa.UUID(), nullable=False),
-    sa.ForeignKeyConstraint(['property_uid'], ['properties.uid'], ),
+    sa.ForeignKeyConstraint(['property_uid'], ['properties.uid'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('value_uid')
     )
     op.create_table('product_property_values',
@@ -297,9 +297,9 @@ def upgrade() -> None:
     sa.Column('property_uid', sa.UUID(), nullable=False),
     sa.Column('int_value', sa.Integer(), nullable=True),
     sa.Column('list_value_uid', sa.UUID(), nullable=True),
-    sa.ForeignKeyConstraint(['list_value_uid'], ['property_list_values.value_uid'], ),
-    sa.ForeignKeyConstraint(['product_uid'], ['products.uid'], ),
-    sa.ForeignKeyConstraint(['property_uid'], ['properties.uid'], ),
+    sa.ForeignKeyConstraint(['list_value_uid'], ['property_list_values.value_uid'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['product_uid'], ['products.uid'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['property_uid'], ['properties.uid'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_product_property_values_list_value_uid'), 'product_property_values', ['list_value_uid'], unique=False)
