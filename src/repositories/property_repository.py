@@ -1,11 +1,8 @@
 import uuid
-from typing import List, Optional, Dict, Any, Tuple
 from sqlalchemy.orm import Session, selectinload
-from sqlalchemy import select, delete, func, and_
-from sqlalchemy.exc import IntegrityError
-from fastapi import HTTPException, status
+from sqlalchemy import select, delete
 from src.db.models import Property, PropertyListValue, ProductPropertyValue
-from src.schemas.product import PropertyInputSchema, PropertyTypeEnum
+from src.schemas import PropertyTypeEnum, PropertyInputSchema
 
 class PropertyRepository:
     """
@@ -14,27 +11,53 @@ class PropertyRepository:
     def __init__(self, session: Session):
         self.db = session
 
-    def get_by_uid(self, property_uid: uuid.UUID) -> Property | None:
+    def get_property_by_uid(self, property_uid: uuid.UUID) -> Property | None:
         """
-        Retrieves a property by its UID, optionally loading its list values if applicable.
-
-        :param property_uid: The UUID of the property to retrieve.
-        :return: The Property object or None if not found.
+        Retrieves a property by its UID
         """
         statement = select(Property).where(Property.uid == property_uid).options(
             selectinload(Property.values)
         )
         return self.db.execute(statement).scalar_one_or_none()
 
+
+    def create_property(self, property_data: PropertyInputSchema) -> Property:
+        """
+        Creates a new property in the database.
+        Handles potential IntegrityErrors for duplicate UIDs.
+        """
+        if self.get_property_by_uid(property_data.uid):
+            raise ValueError(f"Property with UID {property_data.uid} already exists.")
+        if property_data.type == PropertyTypeEnum.LIST:
+            value_exists_stmt = select(PropertyListValue.value_uid).where(
+                PropertyListValue.value_uid.in_([uid.value_uid for uid in property_data.values]),
+            )
+            existing_value_uids = self.db.execute(value_exists_stmt).scalars().all()
+            if existing_value_uids:
+                raise ValueError(f"One or more values already exist: {existing_value_uids}")
+
+        db_property = Property(
+            uid=property_data.uid,
+            name=property_data.name,
+            type=property_data.type
+        )
+
+        if property_data.type == PropertyTypeEnum.LIST:
+            for value_data in property_data.values:
+                db_value = PropertyListValue(
+                    value_uid=value_data.value_uid,
+                    value=value_data.value
+                )
+                db_property.values.append(db_value)
+        self.db.add(db_property)
+        return db_property
+
     def delete_property(self, property_uid: uuid.UUID):
         """
         Deletes a property, its associated list values, and any references
         in ProductPropertyValue.
-
-        :param property_uid: The UUID of the property to delete.
-        :return: True if the property was found and deleted, False otherwise.
         """
-        db_property = self.get_by_uid(property_uid)
+        db_property = self.get_property_by_uid(property_uid)
         if not db_property:
             return False
 

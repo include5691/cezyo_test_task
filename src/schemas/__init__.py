@@ -1,1 +1,2 @@
-from .product import *
+from .product import CatalogOutputSchema, ProductOutputSchema, ProductInputSchema, PropertyValueInputSchema
+from .properties import PropertyInputSchema, PropertyListValueInputSchema, PropertyTypeEnum, PropertyOutputSchema
