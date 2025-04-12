@@ -1,6 +1,6 @@
 import uuid
 from enum import StrEnum
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, model_validator, model_serializer
 from typing import List, Optional, Union
 
 class PropertyTypeEnum(StrEnum):
@@ -18,6 +18,16 @@ class PropertyOutputSchema(BaseModel):
     class Config:
         from_attributes = True
 
+    @model_serializer
+    def to_json(self) -> dict:
+        base_json = {
+            "uid": self.uid,
+            "name": self.name,
+        }
+        if self.value_uid:
+            base_json["value_uid"] = self.value_uid
+        base_json["value"] = self.value
+        return base_json
 
 class PropertyListValueInputSchema(BaseModel):
     """Schema for defining a single possible value within a 'list' type property."""

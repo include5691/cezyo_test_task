@@ -1,7 +1,7 @@
 import uuid
 from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import select, delete
-from src.db.models import Property, PropertyListValue, ProductPropertyValue
+from src.db.models import Property, PropertyListValue
 from src.schemas import PropertyTypeEnum, PropertyInputSchema
 
 class PropertyRepository:
@@ -15,9 +15,7 @@ class PropertyRepository:
         """
         Retrieves a property by its UID
         """
-        statement = select(Property).where(Property.uid == property_uid).options(
-            selectinload(Property.values)
-        )
+        statement = select(Property).where(Property.uid == property_uid)
         return self.db.execute(statement).scalar_one_or_none()
 
 
@@ -60,10 +58,5 @@ class PropertyRepository:
         db_property = self.get_property_by_uid(property_uid)
         if not db_property:
             return False
-
-        delete_product_values_stmt = delete(ProductPropertyValue).where(
-            ProductPropertyValue.property_uid == property_uid
-        )
-        self.db.execute(delete_product_values_stmt)
         self.db.delete(db_property)
         return True

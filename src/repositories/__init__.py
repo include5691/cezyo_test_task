@@ -1,1 +1,2 @@
 from .property_repository import PropertyRepository
+from .product_repository import ProductRepository
