@@ -1,13 +1,7 @@
 import uuid
-from enum import StrEnum
 from pydantic import BaseModel, Field
 from typing import List, Optional
 from .properties import PropertyOutputSchema
-
-class SortOptions(StrEnum):
-    """Enum for available sorting options for the catalog."""
-    UID = "uid"
-    NAME = "name"
 
 class ProductOutputSchema(BaseModel):
     """Represents a single product in the catalog list or detail view."""
