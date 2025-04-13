@@ -38,21 +38,7 @@ class ProductRepository:
             return None
         product_properties_output = []
         for prop_value_db in product_db.property_values:
-            property_db = prop_value_db.property
-            list_value_db = prop_value_db.list_value
-            prop_data = {
-                "uid": property_db.uid,
-                "name": property_db.name,
-                "value_uid": None,
-                "value": None,
-            }
-            if property_db.type == PropertyTypeEnum.INT:
-                prop_data["value"] = prop_value_db.int_value
-            elif property_db.type == PropertyTypeEnum.LIST and list_value_db:
-                prop_data["value_uid"] = list_value_db.value_uid
-                prop_data["value"] = list_value_db.value
-            product_properties_output.append(PropertyOutputSchema(**prop_data))
-
+            product_properties_output.append(PropertyOutputSchema.from_db_models(property_db=prop_value_db.property, property_list_value_db=prop_value_db.list_value, product_property_value_db=prop_value_db))
         return ProductOutputSchema(
             uid=product_db.uid,
             name=product_db.name,
@@ -146,20 +132,20 @@ class ProductRepository:
 
         output_properties = []
         for prop_input in product_data.properties:
-             property_db = existing_properties_map[prop_input.uid]
-             prop_out_data = {
-                 "uid": property_db.uid,
-                 "name": property_db.name,
-                 "value_uid": None,
-                 "value": None
-             }
-             if property_db.type == PropertyTypeEnum.INT:
-                 prop_out_data["value"] = prop_input.value
-             elif property_db.type == PropertyTypeEnum.LIST:
-                 list_value_db = existing_list_values_map[prop_input.value_uid]
-                 prop_out_data["value_uid"] = prop_input.value_uid
-                 prop_out_data["value"] = list_value_db.value
-             output_properties.append(PropertyOutputSchema(**prop_out_data))
+            property_db = existing_properties_map[prop_input.uid]
+            prop_out_data = {
+                "uid": property_db.uid,
+                "name": property_db.name,
+                "value_uid": None,
+                "value": None
+            }
+            if property_db.type == PropertyTypeEnum.INT:
+                prop_out_data["value"] = prop_input.value
+            elif property_db.type == PropertyTypeEnum.LIST:
+                list_value_db = existing_list_values_map[prop_input.value_uid]
+                prop_out_data["value_uid"] = prop_input.value_uid
+                prop_out_data["value"] = list_value_db.value
+            output_properties.append(PropertyOutputSchema.from_db_models(property_db=existing_properties_map[prop_input.uid], property_list_value_db=existing_list_values_map[prop_input.value_uid], product_property_value_db=prop_value_db))
 
         return ProductOutputSchema(
             uid=product_data.uid,

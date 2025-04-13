@@ -2,6 +2,7 @@ import uuid
 from enum import StrEnum
 from pydantic import BaseModel, Field, model_validator, model_serializer
 from typing import List, Optional, Union
+from src.db.models import Property, PropertyListValue, ProductPropertyValue
 
 class PropertyTypeEnum(StrEnum):
     """Enum for the types of properties."""
@@ -15,9 +16,6 @@ class PropertyOutputSchema(BaseModel):
     value_uid: Optional[uuid.UUID] = Field(None, description="Unique identifier of the selected value (for 'list' type properties).", example="a1b2c3d4-e5f6-7890-1234-567890abcdef")
     value: Optional[Union[int, str]] = Field(None, description="The actual value of the property (integer for 'int' type, string name for 'list' type).", example="Red")
 
-    class Config:
-        from_attributes = True
-
     @model_serializer
     def to_json(self) -> dict:
         base_json = {
@@ -28,6 +26,24 @@ class PropertyOutputSchema(BaseModel):
             base_json["value_uid"] = self.value_uid
         base_json["value"] = self.value
         return base_json
+
+    @classmethod
+    def from_db_models(cls, property_db: Property, property_list_value_db: PropertyListValue, product_property_value_db: ProductPropertyValue) -> dict:
+        """Validates the database models and sets the appropriate values."""
+        if property_db.type == PropertyTypeEnum.INT:
+            return cls(**{
+                "uid": property_db.uid,
+                "name": property_db.name,
+                "value": product_property_value_db.int_value
+            })
+        elif property_db.type == PropertyTypeEnum.LIST and property_list_value_db:
+            return cls(**{
+                "uid": property_db.uid,
+                "name": property_db.name,
+                "value_uid": property_list_value_db.value_uid,
+                "value": property_list_value_db.value
+            })
+        raise ValueError("Invalid property type or missing value.")
 
 class PropertyListValueInputSchema(BaseModel):
     """Schema for defining a single possible value within a 'list' type property."""
