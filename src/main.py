@@ -4,8 +4,7 @@ from dotenv import load_dotenv
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
 
-from fastapi import FastAPI, status
-from src.core.config import settings
+from fastapi import FastAPI
 from src.api.endpoints import property_router, products_router, catalog_router
 
 app = FastAPI()
