@@ -145,7 +145,7 @@ class ProductRepository:
                 list_value_db = existing_list_values_map[prop_input.value_uid]
                 prop_out_data["value_uid"] = prop_input.value_uid
                 prop_out_data["value"] = list_value_db.value
-            output_properties.append(PropertyOutputSchema.from_db_models(property_db=existing_properties_map[prop_input.uid], property_list_value_db=existing_list_values_map[prop_input.value_uid], product_property_value_db=prop_value_db))
+            output_properties.append(PropertyOutputSchema.from_db_models(property_db=existing_properties_map[prop_input.uid], property_list_value_db=existing_list_values_map.get(prop_input.value_uid), product_property_value_db=prop_value_db))
 
         return ProductOutputSchema(
             uid=product_data.uid,
