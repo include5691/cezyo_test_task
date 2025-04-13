@@ -1,6 +1,7 @@
 import uuid
+from fastapi import HTTPException, status
 from sqlalchemy.orm import Session, selectinload
-from sqlalchemy import select, delete
+from sqlalchemy import select
 from src.db.models import Property, PropertyListValue
 from src.schemas import PropertyTypeEnum, PropertyInputSchema
 
@@ -57,6 +58,8 @@ class PropertyRepository:
         """
         db_property = self.get_property_by_uid(property_uid)
         if not db_property:
-            return False
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Property not found",
+            )
         self.db.delete(db_property)
-        return True
