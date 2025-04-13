@@ -9,4 +9,5 @@ class Property(Base):
     uid = Column(UUID, primary_key=True, default=uuid.uuid4)
     name = Column(String(255), nullable=True)
     type = Column(Enum('int', 'list', name='property_type_enum'), nullable=False)
+    values = relationship("PropertyListValue", back_populates="property", cascade="all, delete-orphan")
     product_assignments = relationship("ProductPropertyValue", back_populates="property")
