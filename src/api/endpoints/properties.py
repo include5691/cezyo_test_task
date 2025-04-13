@@ -40,9 +40,6 @@ async def delete_property(
     """
     Delete a property by its UID.
     """
-    if not property_repo.delete_property(property_uid):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Property not found"
-        )
+    property_repo.delete_property(property_uid)
     session.commit()
     return {"message": "Property deleted successfully"}
